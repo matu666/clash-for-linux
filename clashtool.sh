@@ -22,11 +22,11 @@ max_retries=3
 # 订阅使用github代理下载
 sub_proxy=false
 # github下载代理地址，clash和ui下载默认使用该代理,地址最后携带/
-github_proxy="https://ghp.ci/"
+github_proxy="https://github.moeyy.xyz/"
 # 设置代理的环境变量(一般为本机)
 proxy_host="http://127.0.0.1"
 proxy_keys="http https ftp socks"
-proxy_no="localhost,127.0.0.1,::1"
+proxy_no="localhost,127.*,192.168.*,10.*,172.16.*,172.17.*,172.18.*,172.19.*,172.20.*,172.21.*,172.22.*,172.23.*,172.24.*,172.25.*,172.26.*,172.27.*,172.28.*,172.29.*,172.30.*,172.31.*"
 
 # 以下变量不建议修改
 service_name="clash"
@@ -60,7 +60,7 @@ gateway_config_path="${config_dir}/gateway.yaml"
 # clashtool 配置文件
 clashtool_config_path="${config_dir}/clashtool.ini"
 # clash配置文件支持的多有变量
-clash_config_keys="port socks-port redir-port tproxy-port mixed-port authentication allow-lan bind-address mode log-level ipv6 unified-delay external-controller global-client-fingerprint external-ui secret interface-name routing-mark hosts profile dns tun proxies proxy-groups proxy-providers tunnels rules"
+clash_config_keys="port socks-port redir-port tproxy-port mixed-port authentication allow-lan bind-address mode log-level ipv6 unified-delay external-controller global-client-fingerprint external-ui secret interface-name routing-mark hosts profile dns tun proxies proxy-groups rule-providers proxy-providers tunnels rules"
 
 # 保存当前clash程序运行状态
 pid=$(pgrep -f "^$clash_path -d ${config_dir}$")
@@ -2378,6 +2378,67 @@ menu() {
     done
 }
 
+set_clash_sh() {
+    mixed_port=$(find_user_config 'mixed-port')
+    if [ -n "$mixed_port" ]; then
+        http_port="$mixed_port"
+        socks_port="$mixed_port"
+    else
+        http_port=$(find_user_config 'port')
+        socks_port=$(find_user_config 'socks-port')
+    fi
+    cat>/etc/profile.d/clash.sh<<EOF
+    # 开启系统代理
+    proxy_on() {
+        export http_proxy=$proxy_host:$http_port
+        export https_proxy=$proxy_host:$http_port
+        export no_proxy=$proxy_no
+        export HTTP_PROXY=$proxy_host:$http_port
+        export HTTPS_PROXY=$proxy_host:$http_port
+        export NO_PROXY=$proxy_no
+        echo -e "\033[32m[√] 已开启代理\033[0m"
+    }
+    # 关闭系统代理
+    proxy_off(){
+        unset http_proxy
+        unset https_proxy
+        unset no_proxy
+        unset HTTP_PROXY
+        unset HTTPS_PROXY
+        unset NO_PROXY
+        echo -e "\033[31m[×] 已关闭代理\033[0m"
+    }
+    EOF
+    echo "请执行以下命令加载环境变量: source /etc/profile.d/clash.sh"
+}
+# 开启系统代理
+proxy_on1() {
+    mixed_port=$(find_user_config 'mixed-port')
+    if [ -n "$mixed_port" ]; then
+        http_port="$mixed_port"
+        socks_port="$mixed_port"
+    else
+        http_port=$(find_user_config 'port')
+        socks_port=$(find_user_config 'socks-port')
+    fi
+	export http_proxy=$proxy_host:$http_port
+	export https_proxy=$proxy_host:$http_port
+	export no_proxy=$no_proxy
+    export HTTP_PROXY=$proxy_host:$http_port
+    export HTTPS_PROXY=$proxy_host:$http_port
+ 	export NO_PROXY=$no_proxy
+	echo -e "\033[32m[√] 已开启代理\033[0m"
+}
+# 关闭系统代理
+proxy_off1(){
+	unset http_proxy
+	unset https_proxy
+	unset no_proxy
+  	unset HTTP_PROXY
+	unset HTTPS_PROXY
+	unset NO_PROXY
+	echo -e "\033[31m[×] 已关闭代理\033[0m"
+}
 
 # 函数：入口主函数
 # 参数: 
@@ -2390,6 +2451,11 @@ main() {
     if $chinese;then
         chinese_language
     fi
+    # 添加环境变量(root权限)
+    # set_clash_sh
+    echo "检查服务端口 netstat -tln | grep -E '9090|789.'"
+    netstat -tln | grep -E '9090|789.'
+
     # 判断使用的命令类型
     if is_sourced;then
         if [ "$fun" = "proxy" ];then
