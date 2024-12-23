@@ -2388,27 +2388,27 @@ set_clash_sh() {
         socks_port=$(find_user_config 'socks-port')
     fi
     cat>/etc/profile.d/clash.sh<<EOF
-    # 开启系统代理
-    proxy_on() {
-        export http_proxy=$proxy_host:$http_port
-        export https_proxy=$proxy_host:$http_port
-        export no_proxy=$proxy_no
-        export HTTP_PROXY=$proxy_host:$http_port
-        export HTTPS_PROXY=$proxy_host:$http_port
-        export NO_PROXY=$proxy_no
-        echo -e "\033[32m[√] 已开启代理\033[0m"
-    }
-    # 关闭系统代理
-    proxy_off(){
-        unset http_proxy
-        unset https_proxy
-        unset no_proxy
-        unset HTTP_PROXY
-        unset HTTPS_PROXY
-        unset NO_PROXY
-        echo -e "\033[31m[×] 已关闭代理\033[0m"
-    }
-    EOF
+# 开启系统代理
+proxy_on() {
+    export http_proxy=$proxy_host:$http_port
+    export https_proxy=$proxy_host:$http_port
+    export no_proxy=$proxy_no
+    export HTTP_PROXY=$proxy_host:$http_port
+    export HTTPS_PROXY=$proxy_host:$http_port
+    export NO_PROXY=$proxy_no
+    echo -e "\033[32m[√] 已开启代理\033[0m"
+}
+# 关闭系统代理
+proxy_off(){
+    unset http_proxy
+    unset https_proxy
+    unset no_proxy
+    unset HTTP_PROXY
+    unset HTTPS_PROXY
+    unset NO_PROXY
+    echo -e "\033[31m[×] 已关闭代理\033[0m"
+}
+EOF
     echo "请执行以下命令加载环境变量: source /etc/profile.d/clash.sh"
 }
 # 开启系统代理
